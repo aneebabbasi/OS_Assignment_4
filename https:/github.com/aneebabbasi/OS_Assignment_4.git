@@ -1,0 +1,61 @@
+#include <iostream>
+#include <thread>
+#include <string>
+#include <condition_variable>
+#include <mutex>
+using namespace std;
+string String;
+mutex inputMutex;
+condition_variable inputCV;
+void inputThread()
+{
+    cout << "Please Enter String: ";
+    cin >> String;
+    inputCV.notify_all();
+}
+void capitalThread()
+{
+    unique_lock < mutex >lock (inputMutex) ;
+    inputCV.wait(lock) ;
+    string capitalized = "";
+    for (int i = 0; i < String.length(); i++)
+    {
+        capitalized += toupper(String[i]);
+    }
+    cout << "Hence Capitalized string is " << capitalized << endl;
+}
+void reverseThread()
+{
+    unique_lock < mutex > lock (inputMutex) ;
+    inputCV.wait(lock) ;
+    string reversed = "";
+    for (int i = String.length() - 1; i >= 0; i--)
+    {
+        reversed += String[i];
+    }
+    cout << "Hence Reversed string is " << reversed << endl;
+}
+void shiftThread()
+{
+    unique_lock < mutex >lock (inputMutex) ;
+    inputCV.wait(lock) ;
+    string shifted = "";
+    for (int i = 0; i < String.length(); i++)
+    {
+        char shiftedChar = String[i] + 2;
+        shifted += shiftedChar;
+    }
+    cout << "Hence Shifted string is " << shifted << endl;
+}
+int main()
+{
+    thread input(inputThread);
+    thread capital(capitalThread);
+    thread reverse(reverseThread);
+    thread shift(shiftThread);
+    input.join();
+    capital.join();
+    reverse.join();
+    shift.join();
+    return 0;
+} 
